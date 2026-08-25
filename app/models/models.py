@@ -1,9 +1,9 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 from enum import Enum
 
 from sqlalchemy import Enum as SQLAlchemyEnum, func
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # ---Input validations---
