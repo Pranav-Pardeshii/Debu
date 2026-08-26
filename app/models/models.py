@@ -34,7 +34,7 @@ class Base(DeclarativeBase):
 class Debate(Base):
     __tablename__ = "debates"
     debate_id: Mapped[int] = mapped_column(primary_key=True)
-    topic: Mapped[str]
+    title: Mapped[str]
     prop_model: Mapped[str] 
     oppo_model: Mapped[str] 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
