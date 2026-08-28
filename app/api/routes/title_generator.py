@@ -8,7 +8,7 @@ from google.genai import types
 load_dotenv()
 
 
-async def generate_title(topic: str) -> AsyncIterator:
+async def generate_title(topic: str) -> str:
     client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
     config = types.GenerateContentConfig(
         system_instruction="You are the model made for generating titles for debate topics, your one and only job is to create titles. Generate a maximum 5 words long title for the given topic. The title must be gramatically correct and logically sensible.",
@@ -18,12 +18,16 @@ async def generate_title(topic: str) -> AsyncIterator:
     ),
     )
     try:
-        response = await client.aio.models.generate_content_stream(
+        response = await client.aio.models.generate_content(
             model = "gemini-2.5-flash",
             contents = topic,
             config=config,
         )
-        async for chunk in response:
-            yield chunk.text
+        return response.text
+        
     except Exception as e:
         raise RuntimeError(f"[TitleGenerationError]:{e}") from e
+
+if __name__ == '__main__':
+    title = asyncio.run(generate_title("Racism good or bad"))
+    print(title)
