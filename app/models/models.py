@@ -35,8 +35,8 @@ class Debate(Base):
     __tablename__ = "debates"
     debate_id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str]
-    prop_model: Mapped[str] 
-    oppo_model: Mapped[str] 
+    proposition_model: Mapped[str] 
+    opposition_model: Mapped[str] 
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     modified_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
     debate_state: Mapped[DebateState] = mapped_column(SQLAlchemyEnum(DebateState), default= DebateState.ACTIVE)
