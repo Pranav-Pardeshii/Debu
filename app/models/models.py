@@ -6,7 +6,7 @@ from sqlalchemy import Enum as SQLAlchemyEnum, func
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-# ---Input validations---
+# ---- Enum ----
 
 class MessageRole(str, Enum):
     PROPOSITION= "proposition"
