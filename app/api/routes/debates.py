@@ -9,8 +9,6 @@ from app.database import get_session
 
 router = APIRouter()
 
-app = FastAPI()
-
 @router.post("/debates/", response_model=DebateResponse)
 async def new_debate(debate_request: CreateDebateRequest, db : AsyncSession = Depends(get_session)):
     try:
@@ -19,7 +17,7 @@ async def new_debate(debate_request: CreateDebateRequest, db : AsyncSession = De
     
         db.add(debate_entry)
         await db.commit()
-
+        await db.refresh(debate_entry)
         return debate_entry
 
         
