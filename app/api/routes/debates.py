@@ -1,6 +1,6 @@
 from fastapi import Depends, FastAPI
 from app.api.routes.title_generator import generate_title
-from app.models.models import Debate
+from app.models.models import Debate, Message, MessageRole, MessageType
 from app.providers.factory import get_provider
 from app.schemas.debates_schema import CreateDebateRequest, DebateResponse
 from fastapi import APIRouter
@@ -18,6 +18,18 @@ async def new_debate(debate_request: CreateDebateRequest, db : AsyncSession = De
         db.add(debate_entry)
         await db.commit()
         await db.refresh(debate_entry)
+
+        topic_message = Message(
+            debate_id = debate_entry.debate_id,
+            role = MessageRole.HUMAN,
+            message_type = MessageType.HUMAN_INJECTION,
+            content = debate_request.topic,
+            sequence_number = 0
+        )
+
+        db.add(topic_message)
+        await db.commit()
+
         return debate_entry
 
         
