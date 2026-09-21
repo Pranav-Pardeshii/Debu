@@ -21,3 +21,5 @@ postman
 # Local database
 .db 
 
+# vs code
+.vscode
