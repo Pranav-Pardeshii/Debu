@@ -1,7 +1,6 @@
-from fastapi import Depends, FastAPI
+from fastapi import Depends
 from app.api.routes.title_generator import generate_title
 from app.models.models import Debate, Message, MessageRole, MessageType
-from app.providers.factory import get_provider
 from app.schemas.debates_schema import CreateDebateRequest, DebateResponse
 from fastapi import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
