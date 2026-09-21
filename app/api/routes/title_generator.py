@@ -1,9 +1,9 @@
 import asyncio
 import os
-from typing import AsyncIterator
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from app.providers.gemini_provider import LLMProviderException
 
 load_dotenv()
 
@@ -26,8 +26,5 @@ async def generate_title(topic: str) -> str:
         return response.text
         
     except Exception as e:
-        raise RuntimeError(f"[TitleGenerationError]:{e}") from e
+        raise LLMProviderException(f"[TitleGenerationError]:{e}") from e
 
-if __name__ == '__main__':
-    title = asyncio.run(generate_title("Racism good or bad"))
-    print(title)
