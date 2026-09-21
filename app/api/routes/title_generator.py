@@ -7,9 +7,9 @@ from google.genai import types
 
 load_dotenv()
 
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 async def generate_title(topic: str) -> str:
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
     config = types.GenerateContentConfig(
         system_instruction="You are the model made for generating titles for debate topics, your one and only job is to create titles. Generate a maximum 5 words long title for the given topic. The title must be gramatically correct and logically sensible.",
         temperature=0.3,
