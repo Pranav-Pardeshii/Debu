@@ -12,7 +12,8 @@ router = APIRouter()
 async def new_debate(debate_request: CreateDebateRequest, db : AsyncSession = Depends(get_session)):
     try:
         title = await generate_title(debate_request.topic)
-        debate_entry = Debate(**debate_request.model_dump(exclude={"topic"}), title=title)
+        # Extract key, value pairs and pass them as keyword arguments
+        debate_entry = Debate(**debate_request.model_dump(exclude={"topic"}), title=title) 
     
         db.add(debate_entry)
         await db.commit()
