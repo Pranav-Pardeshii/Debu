@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 
-@router.websocket("/ws/debates/{debate_id}/")
+@router.websocket("/ws/debates/{debate_id}")
 async def debates_ws(websocket: WebSocket, debate_id: int, db : AsyncSession = Depends(get_session)):
     await websocket.accept()
     try: 
