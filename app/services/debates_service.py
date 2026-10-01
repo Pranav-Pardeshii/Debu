@@ -4,7 +4,7 @@ from app.prompts import PROPOSITION_PROMPT, OPPOSITION_PROMPT
 
 from fastapi import WebSocketDisconnect
 
-from app.models.models import Debate, Message, DebateState, MessageType, MessageRole
+from app.models.models import Debate, Message, MessageType, MessageRole
 
 async def get_debate_history(debate_id, db):
     result = await db.execute(select(Message).where(Message.debate_id==debate_id).order_by(Message.sequence_number))
@@ -21,7 +21,17 @@ async def run(debate_id, websocket, db):
     proposition_provider = get_provider(debate_metadata.proposition_model)
     opposition_provider = get_provider(debate_metadata.opposition_model)
 
-    current_speaker = "proposition"
+   
+    history = await get_debate_history(debate_id=debate_id, db=db)
+
+    last_role = history[-1].role if history else None
+
+    if last_role == 'proposition':
+        current_speaker = 'opposition'
+    elif last_role == 'opposition':
+        current_speaker = 'proposition'
+    else:
+        current_speaker = 'proposition'
 
     while True:
         try:
