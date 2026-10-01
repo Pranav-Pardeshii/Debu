@@ -33,7 +33,9 @@ async def run(debate_id, websocket, db):
     else:
         current_speaker = 'proposition'
 
-    while True:
+    max_calls = 5
+
+    while max_calls > 0:
         try:
             full_response = ''
             history = await get_debate_history(debate_id=debate_id, db=db)
@@ -54,5 +56,6 @@ async def run(debate_id, websocket, db):
             await db.refresh(message_entry)
 
             current_speaker = "opposition" if current_speaker == "proposition" else "proposition"
+            max_calls-=1
         except WebSocketDisconnect:
             break
