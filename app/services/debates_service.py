@@ -33,11 +33,10 @@ async def run(debate_id, websocket, db):
     else:
         current_speaker = 'proposition'
     max_turns = debate_metadata.max_turns
-    
+
     while history[-1].sequence_number < max_turns:
         try:
             full_response = ''
-            history = await get_debate_history(debate_id=debate_id, db=db)
             if current_speaker == "proposition":
                 async for chunk in proposition_provider.generate_response(history = history, current_speaker= current_speaker, system_instruction= PROPOSITION_PROMPT):
                     full_response += chunk
@@ -54,6 +53,7 @@ async def run(debate_id, websocket, db):
             await db.commit()
             await db.refresh(message_entry)
 
+            history = await get_debate_history(debate_id=debate_id, db=db)
             current_speaker = "opposition" if current_speaker == "proposition" else "proposition"
         except WebSocketDisconnect:
             break
