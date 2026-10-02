@@ -4,7 +4,7 @@ from app.prompts import PROPOSITION_PROMPT, OPPOSITION_PROMPT
 
 from fastapi import WebSocketDisconnect
 
-from app.models.models import Debate, Message, MessageType, MessageRole
+from app.models.models import Debate, Message, MessageType, MessageRole, DebateState
 
 async def get_debate_history(debate_id, db):
     result = await db.execute(select(Message).where(Message.debate_id==debate_id).order_by(Message.sequence_number))
@@ -57,3 +57,7 @@ async def run(debate_id, websocket, db):
             current_speaker = "opposition" if current_speaker == "proposition" else "proposition"
         except WebSocketDisconnect:
             break
+
+    debate_metadata.debate_state = DebateState.COMPLETE
+    await db.commit()
+    await websocket.send_text("__DEBATE_COMPLETE__")
