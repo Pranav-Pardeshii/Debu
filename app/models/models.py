@@ -37,8 +37,9 @@ class Debate(Base):
     title: Mapped[str]
     proposition_model: Mapped[str] 
     opposition_model: Mapped[str] 
+    max_turns: Mapped[int] = mapped_column(default= 6)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    modified_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
+    modified_at: Mapped[datetime] = mapped_column(server_default=func.now())
     debate_state: Mapped[DebateState] = mapped_column(SQLAlchemyEnum(DebateState), default= DebateState.ACTIVE)
 
     messages: Mapped[list["Message"]] = relationship(back_populates= "debate")
