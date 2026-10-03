@@ -24,6 +24,6 @@ async def debates_ws(websocket: WebSocket, debate_id: int, db : AsyncSession = D
         listener = await asyncio.create_task(listener(websocket, queue))
         orchestrator = await asyncio.create_task(debates_service.run(debate_id, websocket, db, queue))
 
-        asyncio.gather(listener, orchestrator)
+        await asyncio.gather(listener, orchestrator)
     except WebSocketDisconnect:
         return {"detail":"User diconnected."}
