@@ -96,7 +96,7 @@ Apply migrations and start the server:
 
 ```bash
 uv run alembic upgrade head
-uv run uvicorn app.main:app --reload
+uv run uvicorn app.api.main:app --reload
 ```
 
 Interactive API docs are available at `http://localhost:8000/docs`.
