@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from app.providers.factory import get_provider
 from app.prompts import PROPOSITION_PROMPT, OPPOSITION_PROMPT
 
@@ -12,7 +12,7 @@ async def get_debate_history(debate_id, db):
     return history    
 
 
-async def run(debate_id, websocket, db):
+async def run(debate_id, websocket, db, queue):
     result = await db.execute(select(Debate).where(Debate.debate_id==debate_id))
     debate_metadata = result.scalar_one_or_none()
     if not debate_metadata:
@@ -36,6 +36,15 @@ async def run(debate_id, websocket, db):
 
     while history[-1].sequence_number < max_turns:
         try:
+            if not queue.empty():
+                msg = await queue.get()
+                if msg["type"] == "extend_turns":
+                    max_turns += msg["additional_turns"]
+                    await db.execute(update(Debate).where(Debate.debate_id==debate_id).values(max_turns=max_turns))
+                    await db.commit()
+                    continue
+                elif msg.type == "stop":
+                    break
             full_response = ''
             if current_speaker == "proposition":
                 async for chunk in proposition_provider.generate_response(history = history, current_speaker= current_speaker, system_instruction= PROPOSITION_PROMPT):
