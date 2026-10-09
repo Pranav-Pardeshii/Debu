@@ -25,5 +25,8 @@ async def debates_ws(websocket: WebSocket, debate_id: int, db : AsyncSession = D
         orchestrator_task = asyncio.create_task(debates_service.run(debate_id, websocket, db, queue))
 
         await asyncio.gather(listener_task, orchestrator_task)
+        
     except WebSocketDisconnect:
-        return 
+        listener_task.cancel()
+        orchestrator_task.cancel()
+        return
