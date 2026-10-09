@@ -13,17 +13,23 @@ async def get_debate_history(debate_id, db):
 
 
 async def run(debate_id, websocket, db, queue):
+
     result = await db.execute(select(Debate).where(Debate.debate_id==debate_id))
     debate_metadata = result.scalar_one_or_none()
+
+    if debate_metadata.debate_state == DebateState.COMPLETE:
+        await websocket.send_text("__DEBATE_COMPLETE__")
+        await websocket.close()
+        return
+
     if not debate_metadata:
         await websocket.close(code=4004)
         return 
+    
     proposition_provider = get_provider(debate_metadata.proposition_model)
     opposition_provider = get_provider(debate_metadata.opposition_model)
 
-   
     history = await get_debate_history(debate_id=debate_id, db=db)
-
     last_role = history[-1].role if history else None
 
     if last_role == 'proposition':
@@ -75,7 +81,13 @@ async def run(debate_id, websocket, db, queue):
                     await websocket.send_text(chunk)
             message_type = MessageType.DEBATE_TURN
             role = MessageRole.OPPOSITION if current_speaker == "opposition" else MessageRole.PROPOSITION
-            message_entry = Message(debate_id=debate_id, role=role, message_type=message_type, content=full_response, sequence_number= history[-1].sequence_number+1 )
+            message_entry = Message(
+                debate_id=debate_id, 
+                role=role, 
+                message_type=message_type, 
+                content=full_response, 
+                sequence_number= history[-1].sequence_number+1 
+            )
 
             db.add(message_entry)
             await db.commit()
