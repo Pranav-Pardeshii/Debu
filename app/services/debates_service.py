@@ -35,7 +35,7 @@ async def run(debate_id, websocket, db, queue):
     max_turns = debate_metadata.max_turns
 
     ended_naturally = False
-    
+
     while True:
         try:
             if not queue.empty():
@@ -45,8 +45,20 @@ async def run(debate_id, websocket, db, queue):
                     await db.execute(update(Debate).where(Debate.debate_id==debate_id).values(max_turns=max_turns))
                     await db.commit()
                     continue
+
                 elif msg["type"] == "human_interruption":
+                    human_message = Message(
+                        debate_id= debate_id,
+                        role= MessageRole.HUMAN,
+                        content= msg["content"],
+                        message_type= MessageType.HUMAN_INJECTION,
+                        sequence_number= history[-1].sequence_number + 1
+                    )
+                    db.add(human_message)
+                    await db.commit()
+                    history = get_debate_history(debate_id= debate_id, db= db)
                     continue
+
                 elif msg["type"] == "pause":
                     await db.execute(update(Debate).where(Debate.debate_id==debate_id).values(debate_state=DebateState.PAUSED))
                     await db.commit()
