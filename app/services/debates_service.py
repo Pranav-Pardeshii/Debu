@@ -17,14 +17,14 @@ async def run(debate_id, websocket, db, queue):
     result = await db.execute(select(Debate).where(Debate.debate_id==debate_id))
     debate_metadata = result.scalar_one_or_none()
 
+    if not debate_metadata:
+        await websocket.close(code=4004)
+        return 
+    
     if debate_metadata.debate_state == DebateState.COMPLETE:
         await websocket.send_text("__DEBATE_COMPLETE__")
         await websocket.close()
         return
-
-    if not debate_metadata:
-        await websocket.close(code=4004)
-        return 
     
     proposition_provider = get_provider(debate_metadata.proposition_model)
     opposition_provider = get_provider(debate_metadata.opposition_model)
@@ -62,7 +62,7 @@ async def run(debate_id, websocket, db, queue):
                     )
                     db.add(human_message)
                     await db.commit()
-                    history = get_debate_history(debate_id= debate_id, db= db)
+                    history = await get_debate_history(debate_id= debate_id, db= db)
                     continue
 
                 elif msg["type"] == "pause":
