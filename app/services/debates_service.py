@@ -34,8 +34,9 @@ async def run(debate_id, websocket, db, queue):
         current_speaker = 'proposition'
     max_turns = debate_metadata.max_turns
 
+    ended_naturally = False
+    
     while True:
-        ended_naturally = False
         try:
             if not queue.empty():
                 msg = await queue.get()
