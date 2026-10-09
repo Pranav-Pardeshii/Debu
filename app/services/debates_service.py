@@ -34,7 +34,8 @@ async def run(debate_id, websocket, db, queue):
         current_speaker = 'proposition'
     max_turns = debate_metadata.max_turns
 
-    while history[-1].sequence_number < max_turns:
+    while True:
+        ended_naturally = False
         try:
             if not queue.empty():
                 msg = await queue.get()
@@ -43,8 +44,13 @@ async def run(debate_id, websocket, db, queue):
                     await db.execute(update(Debate).where(Debate.debate_id==debate_id).values(max_turns=max_turns))
                     await db.commit()
                     continue
-                elif msg["type"] == "stop":
+                elif msg["type"] == "human_interruption":
+                    continue
+                elif msg["type"] == "pause":
+                    await db.execute(update(Debate).where(Debate.debate_id==debate_id).values(debate_state=DebateState.PAUSED))
+                    await db.commit()
                     break
+                    
             full_response = ''
             if current_speaker == "proposition":
                 async for chunk in proposition_provider.generate_response(history = history, current_speaker= current_speaker, system_instruction= PROPOSITION_PROMPT):
@@ -64,9 +70,14 @@ async def run(debate_id, websocket, db, queue):
 
             history = await get_debate_history(debate_id=debate_id, db=db)
             current_speaker = "opposition" if current_speaker == "proposition" else "proposition"
+
+            if history[-1].sequence_number >= max_turns:
+                ended_naturally = True
+                break
         except WebSocketDisconnect:
             break
 
-    debate_metadata.debate_state = DebateState.COMPLETE
-    await db.commit()
-    await websocket.send_text("__DEBATE_COMPLETE__")
+    if ended_naturally:
+        debate_metadata.debate_state = DebateState.COMPLETE
+        await db.commit()
+        await websocket.send_text("__DEBATE_COMPLETE__")
