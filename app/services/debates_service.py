@@ -43,7 +43,7 @@ async def run(debate_id, websocket, db, queue):
                     await db.execute(update(Debate).where(Debate.debate_id==debate_id).values(max_turns=max_turns))
                     await db.commit()
                     continue
-                elif msg.type == "stop":
+                elif msg["type"] == "stop":
                     break
             full_response = ''
             if current_speaker == "proposition":
