@@ -18,6 +18,7 @@ async def run(debate_id, websocket, db, queue):
     debate_metadata = result.scalar_one_or_none()
 
     if not debate_metadata:
+        await websocket.send_text("Debate not found!")
         await websocket.close(code=4004)
         return 
     
