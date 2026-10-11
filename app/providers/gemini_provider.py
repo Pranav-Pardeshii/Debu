@@ -45,7 +45,7 @@ class GeminiProvider(LLMProvider):
 
         try:
             response = await self.client.aio.models.generate_content_stream(
-                model="gemini-2.5-flash",
+                model="gemini-3.5-flash-lite",
                 contents=contents,
                 config= config
             )   

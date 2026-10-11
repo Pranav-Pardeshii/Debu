@@ -42,16 +42,28 @@ async def run(debate_id, websocket, db, queue):
     max_turns = debate_metadata.max_turns
 
     ended_naturally = False
+    awaiting_decision = False
 
     while True:
         try:
-            if not queue.empty():
+            if awaiting_decision:
                 msg = await queue.get()
+            elif not queue.empty():
+                msg = await queue.get()
+            else:
+                msg = None
+
+            if msg is not None:
                 if msg["type"] == "extend_turns":
                     max_turns += msg["additional_turns"]
+                    awaiting_decision = False
                     await db.execute(update(Debate).where(Debate.debate_id==debate_id).values(max_turns=max_turns))
                     await db.commit()
                     continue
+
+                elif msg["type"] == "summarize":
+                    ended_naturally = True
+                    break
 
                 elif msg["type"] == "human_interruption":
                     human_message = Message(
@@ -62,6 +74,7 @@ async def run(debate_id, websocket, db, queue):
                         sequence_number= history[-1].sequence_number + 1
                     )
                     db.add(human_message)
+                    awaiting_decision = False
                     await db.commit()
                     history = await get_debate_history(debate_id= debate_id, db= db)
                     continue
@@ -98,8 +111,9 @@ async def run(debate_id, websocket, db, queue):
             current_speaker = "opposition" if current_speaker == "proposition" else "proposition"
 
             if history[-1].sequence_number >= max_turns:
-                ended_naturally = True
-                break
+                awaiting_decision = True
+                await websocket.send_text("__AWAITING_DECISION__")
+                continue
         except WebSocketDisconnect:
             break
 
